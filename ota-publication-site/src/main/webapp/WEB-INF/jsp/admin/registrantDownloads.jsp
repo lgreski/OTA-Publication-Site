@@ -16,13 +16,12 @@
 
 --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<h1>Download History</h1>
+<h2 class="sub-title">Download History</h2>
 
-<div id="formWpr">
 <table><tr>
 	<td>
 		<h3>Registrant Information:</h3>
-		<table>
+		<table class="formTable">
 			<tr>
 				<td class="required">Name: </td>
 				<td>${registrant.firstName} ${registrant.lastName}</td>
@@ -69,7 +68,6 @@
 	<p/>
 	<h3>Download History:</h3>
 </td></tr></table>
-</div>
 
 <table id="reporttable" width="80%" align="left" style="margin-left:20px;">
 	<tr>
@@ -78,7 +76,7 @@
 		<th width="30%">Category</th>
 	</tr>
 	<c:choose>
-		<c:when test="${!registrant.downloadedPublications.isEmpty() || !registrant.downloadedPublicationItems.isEmpty()}">
+		<c:when test="${!registrant.downloadedPublications.isEmpty() || !registrant.downloadedPublicationItems.isEmpty() || !registrant.downloadedCodeLists.isEmpty()}">
 			<c:forEach var="publication" items="${registrant.downloadedPublications}">
 				<tr>
 					<td>${publication.name}-${publication.type.displayId}</td>
@@ -92,6 +90,13 @@
 					<td>${publication.name}-${publication.type.displayId}</td>
 					<td>${item.itemFilename}</td>
 					<td>${item.owner.name}</td>
+				</tr>
+			</c:forEach>
+			<c:forEach var="item" items="${registrant.downloadedCodeLists}">
+				<tr>
+					<td>Code List Release ${item.releaseDateLabel}</td>
+					<td>${item.archiveFilename}</td>
+					<td>Code List Archive</td>
 				</tr>
 			</c:forEach>
 		</c:when>

@@ -52,6 +52,15 @@ public class DAOFactory {
 	}
 	
 	/**
+	 * Returns a new <code>CodeListDAO</code> instance.
+	 * 
+	 * @return CodeListDAO
+	 */
+	public CodeListDAO newCodeListDAO() {
+		return new CodeListDAO( this );
+	}
+	
+	/**
 	 * Returns a new <code>RegistrantDAO</code> instance.
 	 * 
 	 * @return RegistrantDAO
@@ -85,6 +94,15 @@ public class DAOFactory {
 	 */
 	public AdminDAO newAdminDAO() {
 		return new AdminDAO( this );
+	}
+	
+	/**
+	 * Returns a new <code>ApplicationSettingsDAO</code> instance.
+	 * 
+	 * @return ApplicationSettingsDAO
+	 */
+	public ApplicationSettingsDAO newApplicationSettingsDAO() {
+		return new ApplicationSettingsDAO( this );
 	}
 	
 	/**

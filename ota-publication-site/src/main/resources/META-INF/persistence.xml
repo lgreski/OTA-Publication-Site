@@ -31,10 +31,12 @@
 		<class>org.opentravel.pubs.model.Publication</class>
 		<class>org.opentravel.pubs.model.PublicationGroup</class>
 		<class>org.opentravel.pubs.model.PublicationItem</class>
+		<class>org.opentravel.pubs.model.CodeList</class>
 		<class>org.opentravel.pubs.model.Comment</class>
 		<class>org.opentravel.pubs.model.SchemaComment</class>
 		<class>org.opentravel.pubs.model.ArtifactComment</class>
 		<class>org.opentravel.pubs.model.FileContent</class>
+		<class>org.opentravel.pubs.model.ApplicationSettings</class>
 
 		<properties>
 			<property name="hibernate.c3p0.min_size" value="10" />

@@ -15,6 +15,7 @@
     limitations under the License.
 
 --%>
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:if test="${registrant == null}">
 <div>
@@ -22,25 +23,23 @@
 		<span style="font-weight: bold;">All fields are required.</span>
 	</p>
 </div>
-<div id="editBox">
-	<div id="formWpr">
-		<form id="registrationForm" action="${config.localSiteUrl}/specifications/${registrationPage}" method="POST">
-		<input name="processRegistrant" type="hidden" class="text" value="true" />
-		<table border="0" cellpadding="0" cellspacing="0">
-			<%@ include file="registrantInfoForm.jsp" %>
-			<tr>
-				<td colspan="2"><br />
-					<h5>Terms of Service</h5> <textarea style="width: 500px" rows="9"
-						cols="40" readonly="true"><%@ include file="licenseAgreement.txt" %></textarea></td>
-			</tr>
-			<tr>
-				<td>&nbsp;</td>
-				<td><a id="saveButton" class="buttonBlue marginRight10" href="javascript:document.forms.registrationForm.submit();"><span>Accept</span></a>
-				</td>
-			</tr>
-		</table>
-	</div>
-</div>
+<form:form id="registrationForm" action="${config.localSiteUrl}/specifications/${registrationPage}" method="POST" modelAttribute="specificationForm">
+	<form:hidden path="processForm" />
+	<table class="formTable">
+		<%@ include file="registrantInfoForm.jsp" %>
+		<tr>
+			<td colspan="2">
+				<h5>Terms of Service</h5>
+				<textarea class="licenseTextarea" style="width: 500px" rows="9" cols="40" readonly="true"><%@ include file="licenseAgreement.txt" %></textarea>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="padding-left: 465px;">
+				<a id="saveButton" class="buttonRed" href="javascript:document.forms.registrationForm.submit();">Accept</a>
+			</td>
+		</tr>
+	</table>
+</form:form>
 </c:if>
 
 <c:if test="${registrant != null}">

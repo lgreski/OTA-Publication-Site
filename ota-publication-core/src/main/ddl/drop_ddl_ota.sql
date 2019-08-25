@@ -28,3 +28,4 @@ DROP TABLE registrant;
 DROP TABLE hibernate_sequence;
 DROP TABLE user_roles;
 DROP TABLE users;
+DROP TABLE application_settings;

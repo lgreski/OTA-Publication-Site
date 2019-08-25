@@ -141,3 +141,6 @@ CREATE TABLE user_roles (
 # Default userid/password = admin/admin
 INSERT INTO users VALUES ("admin", "d033e22ae348aeb5660fc2140aec35850c4da997");
 INSERT INTO user_roles VALUES ("admin", "administrators");
+
+SOURCE create_ddl_ota_update1.sql
+SOURCE create_ddl_ota_update2.sql

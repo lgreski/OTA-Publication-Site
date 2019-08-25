@@ -41,6 +41,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.opentravel.pubs.validation.EmailAddress;
 
 /**
  * Model object representing a user who registered on the OpenTravel web site for the
@@ -56,13 +57,22 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 		name  = "registrantFindByDateRange",
 		query = "SELECT r FROM Registrant r WHERE r.registrationDate >= :rDate ORDER BY r.registrationDate ASC" ),
 	@NamedQuery(
-		name  = "registrantFindAllDownloaders",
+		name  = "registrantFindAllPublicationDownloaders",
 		query = "SELECT r FROM Registrant r JOIN r.downloadedPublications p "
     		+ "WHERE p.id = :publicationId ORDER BY r.registrationDate ASC" ),
 	@NamedQuery(
-		name  = "registrantFindAllDownloadersByDateRange",
+		name  = "registrantFindAllPublicationDownloadersByDateRange",
 		query = "SELECT r FROM Registrant r JOIN r.downloadedPublications p "
     		+ "WHERE p.id = :publicationId AND r.registrationDate >= :rDate "
+    		+ "ORDER BY r.registrationDate ASC" ),
+	@NamedQuery(
+		name  = "registrantFindAllCodeListDownloaders",
+		query = "SELECT r FROM Registrant r JOIN r.downloadedCodeLists c "
+    		+ "WHERE c.id = :codeListId ORDER BY r.registrationDate ASC" ),
+	@NamedQuery(
+		name  = "registrantFindAllCodeListDownloadersByDateRange",
+		query = "SELECT r FROM Registrant r JOIN r.downloadedCodeLists c "
+    		+ "WHERE c.id = :codeListId AND r.registrationDate >= :rDate "
     		+ "ORDER BY r.registrationDate ASC" ),
 })
 @NamedNativeQueries({
@@ -72,6 +82,9 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 	@NamedNativeQuery(
 		name  = "registrantDeletePublicationItemDownloads",
 		query = "DELETE FROM publication_item_download WHERE registrant_id = :registrantId" ),
+	@NamedNativeQuery(
+		name  = "registrantDeleteCodeListDownloads",
+		query = "DELETE FROM code_list_download WHERE registrant_id = :registrantId" ),
 })
 @Entity
 @Table( name = "registrant" )
@@ -106,6 +119,7 @@ public class Registrant implements Serializable {
 	private String title;
 	
 	@NotNull
+	@EmailAddress
 	@Size( min = 1, max = 50 )
 	@Column( name = "email", nullable = false, length = 50 )
 	private String email;
@@ -135,6 +149,13 @@ public class Registrant implements Serializable {
 		inverseJoinColumns = { @JoinColumn( name = "publication_item_id", referencedColumnName = "id") } )
 	@Cache( usage = CacheConcurrencyStrategy.READ_WRITE, region="collectionCache" )
 	private List<PublicationItem> downloadedPublicationItems;
+	
+	@ManyToMany
+	@JoinTable( name = "code_list_download",
+		joinColumns = { @JoinColumn( name = "registrant_id", referencedColumnName = "id" ) },
+		inverseJoinColumns = { @JoinColumn( name = "code_list_id", referencedColumnName = "id") } )
+	@Cache( usage = CacheConcurrencyStrategy.READ_WRITE, region="collectionCache" )
+	private List<CodeList> downloadedCodeLists;
 	
 	@OneToMany( mappedBy = "submittedBy", fetch = FetchType.LAZY, cascade = { CascadeType.REMOVE } )
 	@OrderBy( "commentNumber ASC" )
@@ -337,6 +358,24 @@ public class Registrant implements Serializable {
 	 */
 	public void setDownloadedPublicationItems(List<PublicationItem> downloadedPublicationItems) {
 		this.downloadedPublicationItems = downloadedPublicationItems;
+	}
+
+	/**
+	 * Returns the value of the 'downloadedCodeLists' field.
+	 *
+	 * @return List<CodeList>
+	 */
+	public List<CodeList> getDownloadedCodeLists() {
+		return downloadedCodeLists;
+	}
+
+	/**
+	 * Assigns the value of the 'downloadedCodeLists' field.
+	 *
+	 * @param downloadedCodeLists  the field value to assign
+	 */
+	public void setDownloadedCodeLists(List<CodeList> downloadedCodeLists) {
+		this.downloadedCodeLists = downloadedCodeLists;
 	}
 
 	/**

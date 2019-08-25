@@ -34,6 +34,7 @@ import org.opentravel.pubs.config.ConfigSettingsFactory;
 import org.opentravel.pubs.lock.LockException;
 import org.opentravel.pubs.lock.LockManager;
 import org.opentravel.pubs.lock.LockableResource;
+import org.opentravel.pubs.model.CodeList;
 import org.opentravel.pubs.model.FileContent;
 import org.opentravel.pubs.model.Publication;
 import org.opentravel.pubs.model.PublicationGroup;
@@ -154,6 +155,34 @@ public class ContentCacheManager {
 		return getContentStream( contentAdapter, lockable );
 	}
 	
+	/**
+	 * Returns an input stream for the archive content of the given code list.
+	 * 
+	 * @param codeList  the code list for which to return the archive content
+	 * @return InputStream
+	 * @throws DAOException  thrown if a stream to the archive content cannot obtained for any reason
+	 */
+	public InputStream getArchiveContent(final CodeList codeList) throws DAOException {
+		LockableFile lockable = new LockableFile( getCacheFile( codeList.getId(), "c") );
+		FileContentAdapter contentAdapter = new FileContentAdapter() {
+			public FileContent getFileContent() {
+				return codeList.getArchiveContent();
+			}
+		};
+		
+		return getContentStream( contentAdapter, lockable );
+	}
+	
+	/**
+	 * Returns an input stream for the file associated with the given adapter instance.  If the
+	 * file does not yet exist in the local file cache, it will be cached automatically during
+	 * this method's processing.
+	 * 
+	 * @param contentAdapter  adapter that provides the file content instance associated with a persistent entity
+	 * @param lockable  the locable instance that should not be modified or deleted until the content download is complete
+	 * @return InputStream
+	 * @throws DAOException  thrown if a stream to the file content cannot obtained for any reason
+	 */
 	private InputStream getContentStream(FileContentAdapter contentAdapter, LockableFile lockable) throws DAOException {
 		File cacheFile = lockable.getResource();
 		InputStream contentStream;
@@ -233,18 +262,13 @@ public class ContentCacheManager {
 		// If we could not gain access to a cached file for any reason, we will obtain the stream
 		// content directly from the database.
 		if (contentStream == null) {
-//			try {
-				FileContent contentRecord = contentAdapter.getFileContent();
-				byte[] contentBytes = (contentRecord == null) ? null : contentRecord.getFileBytes();
-				
-				if (contentBytes == null) {
-					throw new DAOException("No file content exists for the requested resource.");
-				}
-				contentStream = new InflaterInputStream( new ByteArrayInputStream( contentBytes ) );
-				
-//			} catch (IOException e) {
-//				throw new DAOException("Unable to obtain file content for the requested resource.");
-//			}
+			FileContent contentRecord = contentAdapter.getFileContent();
+			byte[] contentBytes = (contentRecord == null) ? null : contentRecord.getFileBytes();
+			
+			if (contentBytes == null) {
+				throw new DAOException("No file content exists for the requested resource.");
+			}
+			contentStream = new InflaterInputStream( new ByteArrayInputStream( contentBytes ) );
 		}
 		return contentStream;
 	}
@@ -272,12 +296,14 @@ public class ContentCacheManager {
 	 * @param dao  the publication DAO that should be used to obtain data from persistent storage
 	 * @throws DAOException  thrown if the purge operation cannot be completed for any reason
 	 */
-	public void purgeOrphanedCacheFiles(PublicationDAO dao) throws DAOException {
+	public void purgeOrphanedCacheFiles(DAOFactory factory) throws DAOException {
+		PublicationDAO publicationDAO = factory.newPublicationDAO();
+		CodeListDAO codeListDAO = factory.newCodeListDAO();
 		Set<String> validFilenames = new HashSet<>();
 		
 		// Start by building a set of all valid cache filenames
 		for (PublicationType pubType : PublicationType.values()) {
-			for (Publication publication : dao.getAllPublications( pubType )) {
+			for (Publication publication : publicationDAO.getAllPublications( pubType )) {
 				for (PublicationGroup group : publication.getPublicationGroups()) {
 					for (PublicationItem item : group.getPublicationItems()) {
 						validFilenames.add( getCacheFile( item.getId(), "i" ).getName() );
@@ -288,8 +314,22 @@ public class ContentCacheManager {
 			}
 		}
 		
+		for (CodeList codeList : codeListDAO.getAllCodeLists()) {
+			validFilenames.add( getCacheFile( codeList.getId(), "c" ).getName() );
+		}
+		
 		// Purge all files from the cache that are not among the valid filenames
 		purgeOrphanedFiles( cacheRoot, validFilenames );
+	}
+	
+	/**
+	 * Deletes all locally-cached files that are associated with the given code list.
+	 * 
+	 * @param codeList  the code list for which to purge cached content
+	 * @throws DAOException  thrown if the purge operation cannot be completed for any reason
+	 */
+	public void purgeCache(CodeList codeList) throws DAOException {
+		deleteCacheFile( getCacheFile( codeList.getId(), "c" ) );
 	}
 	
 	/**
